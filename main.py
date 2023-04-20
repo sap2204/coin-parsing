@@ -19,6 +19,7 @@ y = int(wh/2 - h/2)
 
 # Выравнивание окна программы по центру экрана
 root.geometry("{0}x{1}+{2}+{3}".format(w, h, x, y))
+root.resizable(False, False)
 
 # Установка иконки в окне программы
 root.iconbitmap('icon.ico')
@@ -27,5 +28,11 @@ root.iconbitmap('icon.ico')
 bgimage = tk.PhotoImage(file = 'background.png')
 backgr = tk.Label(root, image = bgimage)
 backgr.pack()
+
+# Создание кнопки запуска парсера
+start_button = tk.Button(root, text = "Запустить парсер!", bg = 'white',
+                          font = 'Arial 15 italic', activebackground = '#C5FCDD'
+)
+start_button.place(relx = 0.33, rely = 0.3)
 
 root.mainloop()
