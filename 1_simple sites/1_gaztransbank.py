@@ -14,7 +14,7 @@ nominal_pattern = r'\d+'
 price_pattern = r'\d+'
 
 # Создание журнала логирования
-logger.add("logs\logs.txt", format = "{time} {level} {message}",
+logger.add("logs\logs_gt.txt", format = "{time} {level} {message}",
 level = 'INFO', rotation = '10 MB', compression = 'zip')
 
 # Создание рандомного юзер-агента
