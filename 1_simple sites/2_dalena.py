@@ -14,7 +14,7 @@ nominal_pattern = r'\d+'
 price_pattern = r'\d+'
 
 # Создание журнала логирования
-logger.add("logs\log_dalena.txt", format = "{time} {level} {message}",
+logger.add("logs\dalena.log", format = "{time} {level} {message}",
            level = 'INFO', rotation = '10 MB', compression = 'zip')
 
 #Создание фантомного юзер агента
@@ -84,7 +84,7 @@ logger.info('Создан итоговый датафрейм')
 
 # Занесение датафрейма в таблицу через xlsxwriter
 
-with pd.ExcelWriter('{}.xlsx'.format(bank_name), engine = 'xlsxwriter') as writer:
+with pd.ExcelWriter('results\{}.xlsx'.format(bank_name), engine = 'xlsxwriter') as writer:
     df.to_excel(writer, sheet_name = bank_name, index = False)
     
     sheet = writer.sheets[bank_name]
