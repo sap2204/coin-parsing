@@ -39,22 +39,95 @@ if responce.ok == True:
     # Создание пустого списка для записи спарсенных данных
     data = []
 
-    # Парсинг списка всех монет
-    coin_list = soup.findAll('div', class_ = 'info')
-    logger.info('Получен список всех монет')
+    # Парсинг списка инвестиционных монет
+    coin_list_invest = soup.findAll('div', class_ = 'coin-list')[0]
+    coin_list_invest = coin_list_invest.findAll('div', class_ = 'item')
+    logger.info('Получен список инвестиционных монет')
     
-    # Цикл для перебора всех монет из полученного списка
-    for coin in coin_list:
+    # Цикл для перебора инвестиционных монет монет из полученного списка
+    for coin in coin_list_invest:
         # Название монеты
         coin_name = coin.find('span', class_ = 'name').text.strip()
-        logger.info('Получено название монеты {0} '.format(coin_name))
-
+        logger.info('Получено название инвест. монеты {0} '.format(coin_name))
+        
         # Масса монеты
         weight = coin.find('div', class_ = 'weight').text.strip().replace(' ', '')
         weight_coin = re.search(weight_pattern, weight).group(0)
-        logger.info('Масса монеты {0} '.format(coin_name))
+        logger.info('Получен вес инвест. монеты {0} '.format(coin_name))
 
-        # Металл монеты
+        #  Металл монеты
         me = coin.findAll('li')[0].text.strip().lower()
-        #coin_me = re.search(me_pattern, me).group(0)  + ' ' + re.search(r'\d+', me).group(0) + '-' # добавление разделителя "-"
-        logger.info('Металл монеты {0} '.format(me))
+        coin_me = re.search(me_pattern, me).group(0)  + ' ' + re.search(r'\d+', me).group(0) + '-' # добавление разделителя "-"
+        logger.info('Получен МЕТАЛЛ инвест. монеты {0} '.format(coin_name))
+        
+        # Номинал монеты
+        nominal = coin.findAll('li')[4].text.strip()
+        coin_nominal = re.search(nominal_pattern, nominal).group(0) + '-' # добавление разделителя '-'
+        logger.info('Получен номинал инвест. монеты {0} '.format(coin_name))
+
+        # Цена монеты
+        price = coin.find('div', class_ = 'selling-price').text.strip().replace(' ', '')
+        coin_price = re.search(price_pattern, price).group(0)
+        logger.info('Получена ЦЕНА монеты {0} '.format(coin_name))
+
+         # Добавление элементов в список
+        data.append([coin_name, '', coin_price, weight_coin, coin_me, coin_nominal])
+        logger.info('Добавление параметров инвест. монет в список')
+
+    # Парсинг списка памятных монет
+    coin_list_memory = soup.findAll('div', class_ = 'coin-list')[1]
+    coin_list_memory = coin_list_memory.findAll('div', class_ = 'item')
+    logger.info('ПОЛУЧЕН СПИСОК ПАМЯТНЫХ МОНЕТ')
+
+    # Цикл для перебора памятных монет монет из полученного списка
+    for coin in coin_list_memory:
+        # Название монеты
+        coin_name = coin.find('span', class_ = 'name').text.strip()
+        logger.info('Получено название памятной монеты {0} '.format(coin_name))
+
+        # Масса монеты 
+        weight = coin.find('div', class_ = 'weight').text.strip()
+        weight_coin = re.search(weight_pattern, weight).group(0)
+        logger.info('Получена МАССА памятной монеты {0} '.format(coin_name))
+
+        # Металл монет (на сайте в этой категории не указан)
+        coin_me = '-'
+        logger.info('Металл памятной монеты не указан {0} '.format(coin_name))
+
+        # Номинал монеты
+        nominal = coin.findAll('li')[2].text.strip().replace(' ', '')
+        coin_nominal = re.search(nominal_pattern, nominal).group(0)+ '-' # добавление разделителя '-'
+        logger.info('Получен НОМИНАЛ памятной монеты {0} '.format(coin_name))
+
+        # Цена монеты
+        price = coin.find('div', class_ = 'selling-price').text.strip().replace(' ', '')
+        coin_price = re.search(price_pattern, price).group(0)
+        logger.info('Получена цена памятной монеты {0} '.format(coin_name))
+
+        # Добавление элементов в список
+        data.append([coin_name, '', coin_price, weight_coin, coin_me, coin_nominal])
+        logger.info('Добавление параметров инвест. монет в список')
+
+# Создание колонок для датафрейма
+titles = ['Монета','Ном.- Проба - Вес', 'Цена', 'Вес', 'Металл', 'Номинал' ]
+
+# Создание и формирование итогового вида датафрейма
+df = pd.DataFrame(data, columns = titles)
+df['Ном.- Проба - Вес'] = df['Номинал']  + df['Металл'] + df['Вес'] # создание колонки с описанием монеты
+df.drop(columns = ['Номинал', 'Металл', 'Вес'], inplace = True)# удаление ненужных колонок
+logger.info('Создан итоговый датафрейм')
+
+# Занесение датафрейма в таблицу через xlsxwriter
+
+with pd.ExcelWriter('results\{}.xlsx'.format(bank_name), engine = 'xlsxwriter') as writer:
+    df.to_excel(writer, sheet_name = bank_name, index = False)
+    
+    sheet = writer.sheets[bank_name]
+    sheet.set_column('A:B', 80) # установка ширины столбца "Монета"
+    sheet.set_column('B:B', 30) # установка ширины столбца "Ном.- Проба - Вес"
+logger.info('Создана таблица {}.xlsx '.format(bank_name) )
+
+    
+
+
+    
