@@ -2,10 +2,10 @@
 import requests 
 from bs4 import BeautifulSoup 
 from fake_useragent import UserAgent 
-import pandas as pd 
+import pandas as pd
 import re 
 import xlsxwriter 
-from loguru import logger
+from loguru import logger 
 
 # Паттерны регулярных выражений
 weight_pattern = r'\d+[.,]\d+'
@@ -14,60 +14,60 @@ nominal_pattern = r'\d+'
 price_pattern = r'\d+'
 
 # Создание журнала логирования
-logger.add("logs\dalena.log", format = "{time} {level} {message}",
+logger.add("logs\dnb24.log", format = "{time} {level} {message}",
            level = 'INFO', rotation = '10 MB', compression = 'zip')
 
-#Создание фантомного юзер агента
+# Создание фантомного юзер агента
 user = UserAgent().random
 header = {'user-agent': user}
-logger.info('Создан фейковый юзер-агент') 
+logger.info('Создан фейковый юзер агент')
 
 # Исходные данные по банку
-bank_name = 'Далена'
-url = 'https://www.dalenabank.ru/chastnym-klientam/monety/'
+bank_name = 'НДбанк'
+url = 'https://ndb24.ru/bank/coins.html'
 
-# Отправка запроса к странице сайта
+# Отправка запроса к странице 
 responce = requests.get(url, headers = header)
-logger.info('Получен ответ от сайта {0} - {1} - {2}'.format(bank_name, responce, url))
+logger.info('Получен ответ от сайта {0} {1} {2}'.format(bank_name, responce, url))
 
-# Проверка статуса ответа сервера и начало сбора информации
+# Проверка статуса ответа и начало сбора информации
 if responce.ok == True:
-    # Получение страницы с сайта и выделение тегов
+    # Получение страницы сайта и выделение тегов
     soup = BeautifulSoup(responce.content, 'lxml')
     logger.info('Получили html-страницу сайта')
 
     # Создание пустого списка для записи спарсенных данных
     data = []
 
-    # Парсинг списка всех монет
-    coin_list = soup.findAll('div', class_ = 'bx-newslist-container col-sm-6 col-md-4')
+    # Получение списка всех монет
+    coin_list = soup.findAll('div', class_ = 'col-sm-8')
     logger.info('Получен список всех монет')
 
-    # Цикл для перебора данных монет из списка всех монет
+    # Цикл для перебора данных всех монет из списка
     for coin in coin_list:
         # Название монеты
-        coin_name = coin.find('h3', class_ = 'bx-newslist-title').text.strip()
+        coin_name = coin.find('h6').text.strip()
         logger.info('Получено название монеты {0} '.format(coin_name))
 
         # Масса монеты
-        weight = coin.findAll('div', class_ = 'bx-newslist-other')[0].text.strip().replace(' ', '').replace(',', '.')
+        weight = coin.findAll('li')[2].text.strip().replace(' ', '').replace(',', '.')
         weight_coin = re.search(weight_pattern, weight).group(0)
-        logger.info('Получен вес монеты {0} '.format(coin_name))
+        logger.info('Получен ВЕС монеты {0} '.format(coin_name))
 
         # Металл монеты
-        me = coin.findAll('div', class_ = 'bx-newslist-other')[1].text.strip().lower()
+        me = coin.findAll('li')[1].text.strip().lower()
         coin_me = re.search(me_pattern, me).group(0)  + ' ' + re.search(r'\d+', me).group(0) + '-' # добавление разделителя "-"
         logger.info('Получен металл монеты {0} '.format(coin_name))
 
         # Номинал монеты
-        nominal = coin.findAll('div', class_ = 'bx-newslist-other')[2].text.strip()
+        nominal = coin.findAll('li')[0].text.strip()
         coin_nominal = re.search(nominal_pattern, nominal).group(0) + '-' # добавление разделителя '-'
-        logger.info('Получение номинала {0} '.format(coin_name))
+        logger.info('Получен НОМИНАЛ монеты {0} '.format(coin_name))
 
         # Цена монеты
-        price = coin.findAll('div', class_ = 'bx-newslist-other')[3].text.strip().replace(' ', '')
+        price = coin.find('li', class_ = 'text-danger').text.strip().replace(' ', '')
         coin_price = int(re.search(price_pattern, price).group(0))
-        logger.info('Получение цены {0} '.format(coin_name)) 
+        logger.info('Получена цена монеты {0} '.format(coin_name))
 
         # Добавление элементов в список
         data.append([coin_name, '', coin_price, weight_coin, coin_me, coin_nominal])

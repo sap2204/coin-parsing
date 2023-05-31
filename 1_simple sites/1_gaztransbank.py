@@ -32,7 +32,7 @@ logger.info('Получен ответ от сайта {0} {1}'.format(bank_name
 # Проверка статуса ответа сервера и начало сбора информации
 if responce.ok == True:
     # Получение страницы сайта и выделение тегов
-    soup = BeautifulSoup(responce.text, 'lxml')
+    soup = BeautifulSoup(responce.content, 'lxml')
     
     # Название монеты
     coin_name = soup.find('div', class_ = 'monets__title').text.strip()
@@ -55,7 +55,7 @@ if responce.ok == True:
 
     # Цена монеты
     price = soup.find('div', class_ = 'monets__price-int').text.strip().replace(' ', '')
-    coin_price = re.search(price_pattern, price).group(0)
+    coin_price = int(re.search(price_pattern, price).group(0))
     logger.info('Получили цену монеты')
 
  

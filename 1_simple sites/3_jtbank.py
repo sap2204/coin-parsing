@@ -33,7 +33,7 @@ logger.info('Получен ответ от сайта {0} - {1} - {2} '.format(
 # Проверка статуса ответа сервера и начало сбора информации
 if responce.ok == True:
     # Получение страницы с сайта и выделение тегов
-    soup = BeautifulSoup(responce.text, 'lxml')
+    soup = BeautifulSoup(responce.content, 'lxml')
     logger.info('Получена страница сайта')
     
     # Создание пустого списка для записи спарсенных данных
@@ -67,7 +67,7 @@ if responce.ok == True:
 
         # Цена монеты
         price = coin.find('div', class_ = 'selling-price').text.strip().replace(' ', '')
-        coin_price = re.search(price_pattern, price).group(0)
+        coin_price = int(re.search(price_pattern, price).group(0))
         logger.info('Получена ЦЕНА монеты {0} '.format(coin_name))
 
          # Добавление элементов в список
@@ -101,7 +101,7 @@ if responce.ok == True:
 
         # Цена монеты
         price = coin.find('div', class_ = 'selling-price').text.strip().replace(' ', '')
-        coin_price = re.search(price_pattern, price).group(0)
+        coin_price = int(re.search(price_pattern, price).group(0))
         logger.info('Получена цена памятной монеты {0} '.format(coin_name))
 
         # Добавление элементов в список
